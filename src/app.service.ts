@@ -82,7 +82,7 @@ export class AppService {
         const user = await this.userModel.findOne({ tg_chat: chatId });
         const admins = await this.userModel.find({ role: 'admin' });
         if (user.role === 'user') {
-          if (msg.text === 'Товари' || msg.text === '/start') {
+          if (check(msg.text) === true) {
             console.log(`User ${msg.from.first_name} watch`);
           } else {
             admins.map(
