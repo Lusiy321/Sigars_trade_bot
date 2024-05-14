@@ -7,6 +7,8 @@ import { Users } from './app.model';
 import { CreateUserDto } from './dto/user.dto';
 import { adminGeneralKeyboard, check, userGeneralKeyboard } from './keyboards';
 
+export const webAppUrl = 'https://sigars-react-form.vercel.app';
+
 @Injectable()
 export class AppService {
   private bot: TelegramBot;
@@ -45,7 +47,7 @@ export class AppService {
                 [
                   {
                     text: 'Список товарів',
-                    web_app: { url: 'https://www.google.com.ua/' },
+                    web_app: { url: webAppUrl },
                   },
                 ],
               ],

@@ -1,18 +1,14 @@
 /* eslint-disable prettier/prettier */
+import { webAppUrl } from './app.service';
+
 export const userGeneralKeyboard = [
-  [
-    { text: 'Товари' },
-    { text: 'Замовити', web_app: { url: 'https://www.google.com.ua/' } },
-  ],
+  [{ text: 'Товари' }, { text: 'Замовити', web_app: { url: webAppUrl } }],
   [{ text: 'Як замовляти' }, { text: 'Про нас' }],
 ];
 
 export const adminGeneralKeyboard = [
   [{ text: 'Склад' }, { text: 'Замовлення' }],
-  [
-    { text: 'Додати товар', web_app: { url: 'https://www.google.com.ua/' } },
-    { text: 'Звіт' },
-  ],
+  [{ text: 'Додати товар', web_app: { url: webAppUrl } }, { text: 'Звіт' }],
 ];
 
 export function check(text: string) {
