@@ -4,7 +4,7 @@ export const userGeneralKeyboard = [
     { text: 'Товари' },
     {
       text: 'Замовити',
-      web_app: { url: 'https://sigars-react-form.vercel.app/' },
+      web_app: { url: 'https://sigars-react-form.vercel.app/order' },
     },
   ],
   [{ text: 'Як замовляти' }, { text: 'Про нас' }],
@@ -15,7 +15,7 @@ export const adminGeneralKeyboard = [
   [
     {
       text: 'Додати товар',
-      web_app: { url: 'https://sigars-react-form.vercel.app/' },
+      web_app: { url: 'https://sigars-react-form.vercel.app/product' },
     },
     { text: 'Звіт' },
   ],
