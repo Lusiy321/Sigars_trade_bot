@@ -1,14 +1,24 @@
 /* eslint-disable prettier/prettier */
-import { webAppUrl } from './app.service';
-
 export const userGeneralKeyboard = [
-  [{ text: 'Товари' }, { text: 'Замовити', web_app: { url: webAppUrl } }],
+  [
+    { text: 'Товари' },
+    {
+      text: 'Замовити',
+      web_app: { url: 'https://sigars-react-form.vercel.app/' },
+    },
+  ],
   [{ text: 'Як замовляти' }, { text: 'Про нас' }],
 ];
 
 export const adminGeneralKeyboard = [
   [{ text: 'Склад' }, { text: 'Замовлення' }],
-  [{ text: 'Додати товар', web_app: { url: webAppUrl } }, { text: 'Звіт' }],
+  [
+    {
+      text: 'Додати товар',
+      web_app: { url: 'https://sigars-react-form.vercel.app/' },
+    },
+    { text: 'Звіт' },
+  ],
 ];
 
 export function check(text: string) {
