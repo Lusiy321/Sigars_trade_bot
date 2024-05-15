@@ -219,7 +219,7 @@ export class AppService {
               },
             ),
         );
-        return;
+        return createdProduct;
       } else {
         return;
       }

@@ -17,7 +17,6 @@ export class AppController {
 
   @Post('/create-product')
   async createDashboard(@Body() product: CreateProductDto): Promise<Products> {
-    await this.appService.createProduct(product);
-    return;
+    return await this.appService.createProduct(product);
   }
 }
