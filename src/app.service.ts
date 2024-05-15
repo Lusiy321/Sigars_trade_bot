@@ -255,6 +255,7 @@ export class AppService {
 
   async createOrder(order: CreateOrderDto) {
     try {
+      console.log(order);
       const { name, tg_owner, phone, adress, product } = order;
       if (name && tg_owner && phone && adress && product) {
         const total = product[0].volume * product[0].price;
