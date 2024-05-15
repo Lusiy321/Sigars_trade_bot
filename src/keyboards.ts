@@ -1,12 +1,6 @@
 /* eslint-disable prettier/prettier */
 export const userGeneralKeyboard = [
-  [
-    { text: 'Товари' },
-    {
-      text: 'Замовити',
-      web_app: { url: 'https://sigars-react-form.vercel.app/order' },
-    },
-  ],
+  [{ text: 'Товари' }, { text: 'Замовити' }],
   [{ text: 'Як замовляти' }, { text: 'Про нас' }],
 ];
 

@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import * as TelegramBot from 'node-telegram-bot-api';
-import { information, product, startMsg } from './message';
+import { information, orderMsg, product, startMsg } from './message';
 import { InjectModel } from '@nestjs/mongoose';
 import { Users } from './app.model';
 import { CreateUserDto } from './dto/user.dto';
@@ -74,6 +74,29 @@ export class AppService {
           resize_keyboard: true,
         },
       });
+    });
+
+    this.bot.onText(/Замовити/, async (msg: any) => {
+      const chatId = msg.chat.id;
+      await this.bot.sendMessage(
+        chatId,
+        `Привіт! ${msg.from.first_name}.\n` + orderMsg,
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: 'Замовити',
+                  web_app: {
+                    url: 'https://sigars-react-form.vercel.app/order',
+                  },
+                },
+              ],
+            ],
+            resize_keyboard: true,
+          },
+        },
+      );
     });
 
     this.bot.on('message', async (msg: any) => {
