@@ -3,9 +3,10 @@ import { Injectable } from '@nestjs/common';
 import * as TelegramBot from 'node-telegram-bot-api';
 import { information, orderMsg, product, startMsg } from './message';
 import { InjectModel } from '@nestjs/mongoose';
-import { Users } from './app.model';
+import { Orders, Products, Users } from './app.model';
 import { CreateUserDto } from './dto/user.dto';
 import { adminGeneralKeyboard, check, userGeneralKeyboard } from './keyboards';
+import { CreateProductDto } from './dto/product.dto';
 
 @Injectable()
 export class AppService {
@@ -14,6 +15,10 @@ export class AppService {
   constructor(
     @InjectModel(Users.name)
     private userModel: Users,
+    @InjectModel(Products.name)
+    private productModel: Products,
+    @InjectModel(Orders.name)
+    private orderModel: Orders,
   ) {
     const token = process.env.TG_TOKEN;
     this.bot = new TelegramBot(token, { polling: true });
@@ -174,6 +179,46 @@ export class AppService {
           ...user,
         });
         createdUser.save();
+        return;
+      } else {
+        return;
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async findAllProducts() {
+    try {
+      const products = await this.productModel.find();
+      return products;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async createProduct(product: CreateProductDto) {
+    try {
+      const { name, quantity, price } = product;
+      if (name && quantity && price) {
+        const createdProduct = await this.productModel.create({
+          ...product,
+        });
+        createdProduct.save();
+        const admins = await this.userModel.find({ role: 'admin' });
+        admins.map(
+          async (admin: any) =>
+            await this.bot.sendMessage(
+              admin.tg_chat,
+              `Додано товар: ${name}, ціна: ${price}, кулькість:${quantity}`,
+              {
+                reply_markup: {
+                  keyboard: adminGeneralKeyboard,
+                  resize_keyboard: true,
+                },
+              },
+            ),
+        );
         return;
       } else {
         return;

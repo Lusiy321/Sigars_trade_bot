@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 export const userGeneralKeyboard = [
   [{ text: 'Товари' }, { text: 'Замовити' }],
-  [{ text: 'Як замовляти' }, { text: 'Про нас' }],
+  [{ text: 'Про нас' }],
 ];
 
 export const adminGeneralKeyboard = [
@@ -21,8 +21,7 @@ export function check(text: string) {
     text === 'Склад' ||
     text === 'Додати товар' ||
     text === 'Звіт' ||
-    text === 'Замовлення' ||
-    text === 'Як замовляти' ||
+    text === 'Замовити' ||
     text === 'Про нас' ||
     text === 'Товари'
   ) {

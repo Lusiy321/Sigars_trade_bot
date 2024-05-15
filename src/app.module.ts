@@ -11,6 +11,7 @@ import {
   UserSchema,
   Users,
 } from './app.model';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import {
       { name: Products.name, schema: ProductSchema, collection: 'products' },
     ]),
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
