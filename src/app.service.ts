@@ -1,12 +1,13 @@
 /* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import * as TelegramBot from 'node-telegram-bot-api';
-import { information, orderMsg, product, startMsg } from './message';
+import { information, orderMsg, startMsg } from './message';
 import { InjectModel } from '@nestjs/mongoose';
 import { Orders, Products, Users } from './app.model';
 import { CreateUserDto } from './dto/user.dto';
 import { adminGeneralKeyboard, check, userGeneralKeyboard } from './keyboards';
 import { CreateProductDto } from './dto/product.dto';
+import { CreateOrderDto } from './dto/order.dto';
 
 @Injectable()
 export class AppService {
@@ -63,9 +64,33 @@ export class AppService {
 
     this.bot.onText(/Товари/, async (msg: any) => {
       const chatId = msg.chat.id;
-      this.bot.sendMessage(chatId, product, {
+      const products = await this.findAllProducts();
+      const filterProducts = products.filter(
+        (product: any) => product.quantity !== 0,
+      );
+      let message = '☄️Наші товари:☄️\n\n';
+      filterProducts.forEach((product) => {
+        message += `✅ ${product.name} - ціна ${product.price}грн.\n\n`;
+      });
+      this.bot.sendMessage(chatId, message, {
         reply_markup: {
           keyboard: userGeneralKeyboard,
+          resize_keyboard: true,
+        },
+      });
+    });
+
+    this.bot.onText(/Склад/, async (msg: any) => {
+      const chatId = msg.chat.id;
+      const products = await this.findAllProducts();
+
+      let message = 'Склад:\n\n';
+      products.forEach((product: any) => {
+        message += `${product.name}, кількість - ${product.quantity}шт. Ціна - ${product.price}грн.\n\n`;
+      });
+      this.bot.sendMessage(chatId, message, {
+        reply_markup: {
+          keyboard: adminGeneralKeyboard,
           resize_keyboard: true,
         },
       });
@@ -210,7 +235,7 @@ export class AppService {
           async (admin: any) =>
             await this.bot.sendMessage(
               admin.tg_chat,
-              `Додано товар: ${name}, ціна: ${price}, кулькість:${quantity}`,
+              `Додано товар: ${name}, ціна: ${price}грн., кількість:${quantity}`,
               {
                 reply_markup: {
                   keyboard: adminGeneralKeyboard,
@@ -222,6 +247,49 @@ export class AppService {
         return createdProduct;
       } else {
         return;
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async createOrder(order: CreateOrderDto) {
+    try {
+      const { name, tg_owner, phone, adress, product } = order;
+      if (name && tg_owner && phone && adress && product) {
+        const total = product[0].volume * product[0].price;
+        const createdProduct = await this.productModel.create({
+          ...order,
+          total_price: total,
+        });
+        createdProduct.save();
+        const admins = await this.userModel.find({ role: 'admin' });
+        admins.map(
+          async (admin: any) =>
+            await this.bot.sendMessage(
+              admin.tg_chat,
+              `${tg_owner} #${name}\n\nЗамовлення:\n\n Товар: ${product[0].name}\n Кількість: ${product[0].volume} шт. по ${product[0].price}грн.\n Сумма: ${total}грн.\nТелефон: ${phone}\n, Адреса:${adress}`,
+              {
+                reply_markup: {
+                  keyboard: adminGeneralKeyboard,
+                  resize_keyboard: true,
+                },
+              },
+            ),
+        );
+        await this.bot.sendMessage(
+          tg_owner,
+          `Замовлення:\n\n Товар: ${product[0].name}\n Кількість: ${product[0].volume} шт. по ${product[0].price}грн.\n Сумма: ${total}грн.\nТелефон: ${phone}\n, Адреса:${adress}\n\n Чекайте, зараз Вам напише оператор для уточнення часу доставки`,
+          {
+            reply_markup: {
+              keyboard: adminGeneralKeyboard,
+              resize_keyboard: true,
+            },
+          },
+        );
+        return createdProduct;
+      } else {
+        return null;
       }
     } catch (e) {
       throw e;

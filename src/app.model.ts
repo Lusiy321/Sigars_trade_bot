@@ -34,7 +34,7 @@ export const UserSchema = SchemaFactory.createForClass(Users);
 
 export type OrdersDocument = Orders & Document;
 
-interface userOrder {
+export interface userOrder {
   name: string;
   price: number;
   volume: number;
