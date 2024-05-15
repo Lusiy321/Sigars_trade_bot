@@ -258,7 +258,7 @@ export class AppService {
       const { name, tg_owner, phone, adress, product } = order;
       if (name && tg_owner && phone && adress && product) {
         const total = product[0].volume * product[0].price;
-        const createdProduct = await this.productModel.create({
+        const createdProduct = await this.orderModel.create({
           ...order,
           total_price: total,
         });
@@ -268,7 +268,7 @@ export class AppService {
           async (admin: any) =>
             await this.bot.sendMessage(
               admin.tg_chat,
-              `${tg_owner} #${name}\n\nЗамовлення:\n\n Товар: ${product[0].name}\n Кількість: ${product[0].volume} шт. по ${product[0].price}грн.\n Сумма: ${total}грн.\nТелефон: ${phone}\n, Адреса:${adress}`,
+              `${tg_owner} #${name}\n\nЗамовлення:\n\n Товар: ${product[0].name}\n Кількість: ${product[0].volume} шт. по ${product[0].price}грн.\n Сумма: ${total}грн.\n Телефон: ${phone}\n Адреса:${adress}`,
               {
                 reply_markup: {
                   keyboard: adminGeneralKeyboard,
@@ -279,7 +279,7 @@ export class AppService {
         );
         await this.bot.sendMessage(
           tg_owner,
-          `Замовлення:\n\n Товар: ${product[0].name}\n Кількість: ${product[0].volume} шт. по ${product[0].price}грн.\n Сумма: ${total}грн.\nТелефон: ${phone}\n, Адреса:${adress}\n\n Чекайте, зараз Вам напише оператор для уточнення часу доставки`,
+          `Замовлення:\n\nТовар: ${product[0].name}\nКількість: ${product[0].volume} шт. по ${product[0].price}грн.\nСумма: ${total}грн.\nТелефон: ${phone}\nАдреса:${adress}\n\nЧекайте, зараз Вам напише оператор для уточнення часу доставки`,
           {
             reply_markup: {
               keyboard: adminGeneralKeyboard,

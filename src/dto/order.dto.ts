@@ -6,6 +6,5 @@ export class CreateOrderDto {
   readonly tg_owner: number;
   readonly phone: string;
   readonly adress: string;
-  readonly total_price: string;
   readonly product: [userOrder];
 }
