@@ -26,7 +26,7 @@ export class AppService {
     this.setupBot();
   }
 
-  private setupBot() {
+  private async setupBot() {
     this.bot.onText(/\/start/, async (msg: any) => {
       const chatId = msg.chat.id;
       const user = { name: msg.from.first_name, tg_chat: chatId };
@@ -72,7 +72,7 @@ export class AppService {
       filterProducts.forEach((product) => {
         message += `✅ ${product.name} - ціна ${product.price}грн.\n\n`;
       });
-      this.bot.sendMessage(chatId, message, {
+      await this.bot.sendMessage(chatId, message, {
         reply_markup: {
           keyboard: userGeneralKeyboard,
           resize_keyboard: true,
@@ -88,7 +88,7 @@ export class AppService {
       products.forEach((product: any) => {
         message += `${product.name}, кількість - ${product.quantity}шт. Ціна - ${product.price}грн.\n\n`;
       });
-      this.bot.sendMessage(chatId, message, {
+      await this.bot.sendMessage(chatId, message, {
         reply_markup: {
           keyboard: adminGeneralKeyboard,
           resize_keyboard: true,
@@ -98,11 +98,59 @@ export class AppService {
 
     this.bot.onText(/Про нас/, async (msg: any) => {
       const chatId = msg.chat.id;
-      this.bot.sendMessage(chatId, information, {
+      await this.bot.sendMessage(chatId, information, {
         reply_markup: {
           keyboard: userGeneralKeyboard,
           resize_keyboard: true,
         },
+      });
+    });
+
+    this.bot.onText(/Замовлення/, async (msg: any) => {
+      const chatId = msg.chat.id;
+      const orders = await this.findAllOrders();
+      await this.bot.sendMessage(chatId, 'Перелік замовлень:', {
+        reply_markup: {
+          keyboard: adminGeneralKeyboard,
+          resize_keyboard: true,
+        },
+      });
+      orders.map(async (order: any) => {
+        const status = order.status === true ? `Активний` : 'Виконано';
+
+        const message = `${order.tg_owner} #${order.name}\n\nНайменування - ${
+          order.product[0].name
+        } - ${order.product[0].price}грн.\nКількість: ${
+          order.product[0].volume
+        }шт.\nСумма - ${order.total_price}грн.\n Телефон: ${
+          order.phone
+        }\nАдресса: ${order.adress}\nДата: ${order.createdAt.toLocaleDateString(
+          'ru-RU',
+          {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+          },
+        )}\nСтатус: ${status}`;
+        await this.bot.sendMessage(chatId, message, {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: 'Виконано',
+                  callback_data: `${order.id}:done`,
+                },
+                {
+                  text: 'Видалити',
+                  callback_data: `${order.id}:delete`,
+                },
+              ],
+            ],
+            resize_keyboard: true,
+          },
+        });
       });
     });
 
@@ -184,6 +232,43 @@ export class AppService {
       }
     });
 
+    this.bot.on(
+      'callback_query',
+      async (query: { message?: any; data?: any }) => {
+        const { data, message } = query;
+
+        const [ID, action] = data.split(':');
+        if (action === 'delete') {
+          const order = await this.orderModel.findById(ID);
+          await this.orderModel.findByIdAndDelete(ID);
+          const chatId = message.chat.id;
+          await this.bot.sendMessage(
+            chatId,
+            `Замовлення ${order.product[0].name} - ${order.product[0].volume}шт. на сумму ${order.total_price}  видалено`,
+          );
+        }
+        if (action === 'done') {
+          const order = await this.orderModel.findById(ID);
+          const product = await this.productModel.findOne({
+            name: order.product[0].name,
+          });
+          console.log(product);
+          const newVolume = product.quantity - order.product[0].volume;
+          await this.productModel.findByIdAndUpdate(product.id, {
+            quantity: newVolume,
+          });
+          await this.orderModel.findByIdAndUpdate(ID, {
+            status: false,
+          });
+          const chatId = message.chat.id;
+          await this.bot.sendMessage(
+            chatId,
+            `Замовлення ${order.product[0].name} - ${order.product[0].volume}шт. на сумму ${order.total_price} виконано`,
+          );
+        }
+      },
+    );
+
     this.bot.on('polling_error', (error: any) => {
       console.error(error);
     });
@@ -222,6 +307,15 @@ export class AppService {
     }
   }
 
+  async findAllOrders() {
+    try {
+      const orders = await this.orderModel.find();
+      return orders;
+    } catch (e) {
+      throw e;
+    }
+  }
+
   async createProduct(product: CreateProductDto) {
     try {
       const { name, quantity, price } = product;
@@ -255,7 +349,6 @@ export class AppService {
 
   async createOrder(order: CreateOrderDto) {
     try {
-      console.log(order);
       const { name, tg_owner, phone, adress, product } = order;
       if (name && tg_owner && phone && adress && product) {
         const total = product[0].volume * product[0].price;
@@ -269,7 +362,7 @@ export class AppService {
           async (admin: any) =>
             await this.bot.sendMessage(
               admin.tg_chat,
-              `${tg_owner} #${name}\n\nЗамовлення:\n\n Товар: ${product[0].name}\n Кількість: ${product[0].volume} шт. по ${product[0].price}грн.\n Сумма: ${total}грн.\n Телефон: ${phone}\n Адреса:${adress}`,
+              `${tg_owner} #${name}\n\nЗамовлення:\n\n Товар: ${product[0].name}\n Кількість: ${product[0].volume} шт. по ${product[0].price}грн.\n Сумма: ${total}грн.\n Телефон: ${phone}\n Адреса: ${adress}`,
               {
                 reply_markup: {
                   keyboard: adminGeneralKeyboard,
@@ -280,7 +373,7 @@ export class AppService {
         );
         await this.bot.sendMessage(
           tg_owner,
-          `Замовлення:\n\nТовар: ${product[0].name}\nКількість: ${product[0].volume} шт. по ${product[0].price}грн.\nСумма: ${total}грн.\nТелефон: ${phone}\nАдреса:${adress}\n\nЧекайте, зараз Вам напише оператор для уточнення часу доставки`,
+          `Замовлення:\n\nТовар: ${product[0].name}\nКількість: ${product[0].volume} шт. по ${product[0].price}грн.\nСумма: ${total}грн.\nТелефон: ${phone}\nАдреса: ${adress}\n\nЧекайте, зараз Вам напише оператор для уточнення часу доставки`,
           {
             reply_markup: {
               keyboard: adminGeneralKeyboard,

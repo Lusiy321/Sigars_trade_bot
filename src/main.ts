@@ -10,8 +10,8 @@ async function start() {
   });
 
   app.enableCors({});
-  await app.listen(3000, async () => {
-    console.log(`Server started on port = http://localhost:3000`);
+  await app.listen(5000, async () => {
+    console.log(`Server started on port = http://localhost:5000`);
   });
 }
 start();

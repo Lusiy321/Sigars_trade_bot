@@ -23,6 +23,7 @@ export class AppController {
 
   @Post('/create-order')
   async createOrder(@Body() product: CreateOrderDto): Promise<Orders> {
+    console.log(product);
     return await this.appService.createOrder(product);
   }
 }
