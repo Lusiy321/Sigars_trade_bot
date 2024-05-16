@@ -5,7 +5,13 @@ import { information, orderMsg, startMsg } from './message';
 import { InjectModel } from '@nestjs/mongoose';
 import { Orders, Products, Users } from './app.model';
 import { CreateUserDto } from './dto/user.dto';
-import { adminGeneralKeyboard, check, userGeneralKeyboard } from './keyboards';
+import {
+  adminGeneralKeyboard,
+  check,
+  deleteButton,
+  orderButtons,
+  userGeneralKeyboard,
+} from './keyboards';
 import { CreateProductDto } from './dto/product.dto';
 import { CreateOrderDto } from './dto/order.dto';
 
@@ -47,14 +53,7 @@ export class AppService {
           `Привіт! ${msg.from.first_name}.\n` + startMsg,
           {
             reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: 'Список товарів',
-                    web_app: { url: 'https://sigars-react-form.vercel.app/' },
-                  },
-                ],
-              ],
+              keyboard: userGeneralKeyboard,
               resize_keyboard: true,
             },
           },
@@ -134,23 +133,23 @@ export class AppService {
             minute: '2-digit',
           },
         )}\nСтатус: ${status}`;
-        await this.bot.sendMessage(chatId, message, {
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: 'Виконано',
-                  callback_data: `${order.id}:done`,
-                },
-                {
-                  text: 'Видалити',
-                  callback_data: `${order.id}:delete`,
-                },
-              ],
-            ],
-            resize_keyboard: true,
-          },
-        });
+        if (order.status === true) {
+          const keyboard = await orderButtons(order);
+          await this.bot.sendMessage(chatId, message, {
+            reply_markup: {
+              inline_keyboard: keyboard,
+              resize_keyboard: true,
+            },
+          });
+        } else {
+          const keyboard = await deleteButton(order);
+          await this.bot.sendMessage(chatId, message, {
+            reply_markup: {
+              inline_keyboard: keyboard,
+              resize_keyboard: true,
+            },
+          });
+        }
       });
     });
 
@@ -228,7 +227,7 @@ export class AppService {
           }
         }
       } catch (e) {
-        console.error(e);
+        console.error(e.message);
       }
     });
 
@@ -252,7 +251,6 @@ export class AppService {
           const product = await this.productModel.findOne({
             name: order.product[0].name,
           });
-          console.log(product);
           const newVolume = product.quantity - order.product[0].volume;
           await this.productModel.findByIdAndUpdate(product.id, {
             quantity: newVolume,
@@ -270,7 +268,7 @@ export class AppService {
     );
 
     this.bot.on('polling_error', (error: any) => {
-      console.error(error);
+      console.error(error.message);
     });
   }
 
@@ -376,7 +374,7 @@ export class AppService {
           `Замовлення:\n\nТовар: ${product[0].name}\nКількість: ${product[0].volume} шт. по ${product[0].price}грн.\nСумма: ${total}грн.\nТелефон: ${phone}\nАдреса: ${adress}\n\nЧекайте, зараз Вам напише оператор для уточнення часу доставки`,
           {
             reply_markup: {
-              keyboard: adminGeneralKeyboard,
+              keyboard: userGeneralKeyboard,
               resize_keyboard: true,
             },
           },

@@ -15,6 +15,34 @@ export const adminGeneralKeyboard = [
   ],
 ];
 
+export async function orderButtons(order: any) {
+  const buttons = [
+    [
+      {
+        text: 'Виконано',
+        callback_data: `${order.id}:done`,
+      },
+      {
+        text: 'Видалити',
+        callback_data: `${order.id}:delete`,
+      },
+    ],
+  ];
+  return buttons;
+}
+
+export async function deleteButton(order: any) {
+  const buttons = [
+    [
+      {
+        text: 'Видалити',
+        callback_data: `${order.id}:delete`,
+      },
+    ],
+  ];
+  return buttons;
+}
+
 export function check(text: string) {
   if (
     text === '/start' ||
