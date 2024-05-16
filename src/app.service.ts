@@ -37,7 +37,7 @@ export class AppService {
       const chatId = msg.chat.id;
       const user = { name: msg.from.first_name, tg_chat: chatId };
       const existUser = await this.userModel.findOne({ tg_chat: chatId });
-      if (!existUser) {
+      if (existUser === null) {
         await this.create(user);
       }
       if (existUser.role === 'admin') {
