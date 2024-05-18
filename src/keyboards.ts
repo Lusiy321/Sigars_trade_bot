@@ -54,6 +54,7 @@ export function check(text: string) {
     text === 'Оновити товар' ||
     text === 'Замовити' ||
     text === 'Про нас' ||
+    text === 'Замовлення' ||
     text === 'Товари'
   ) {
     return true;
