@@ -21,8 +21,13 @@ export class AppController {
     return await this.appService.createProduct(product);
   }
 
+  @Post('/edit-product')
+  async editProduct(@Body() product: CreateProductDto): Promise<Products> {
+    return await this.appService.editProduct(product);
+  }
+
   @Post('/create-order')
-  async createOrder(@Body() product: CreateOrderDto): Promise<Orders> {
-    return await this.appService.createOrder(product);
+  async createOrder(@Body() order: CreateOrderDto): Promise<Orders> {
+    return await this.appService.createOrder(order);
   }
 }

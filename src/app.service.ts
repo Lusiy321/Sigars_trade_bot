@@ -68,88 +68,14 @@ export class AppService {
         (product: any) => product.quantity !== 0,
       );
       let message = '☄️Наші товари:☄️\n\n';
-      filterProducts.forEach((product) => {
-        message += `✅ ${product.name} - ціна ${product.price}грн.\n\n`;
+      filterProducts.forEach((product: Products) => {
+        message += `✅ ${product.name} - ${product.price}грн.\n\n`;
       });
       await this.bot.sendMessage(chatId, message, {
         reply_markup: {
           keyboard: userGeneralKeyboard,
           resize_keyboard: true,
         },
-      });
-    });
-
-    this.bot.onText(/Склад/, async (msg: any) => {
-      const chatId = msg.chat.id;
-      const products = await this.findAllProducts();
-
-      let message = 'Склад:\n\n';
-      products.forEach((product: any) => {
-        message += `${product.name}, кількість - ${product.quantity}шт. Ціна - ${product.price}грн.\n\n`;
-      });
-      await this.bot.sendMessage(chatId, message, {
-        reply_markup: {
-          keyboard: adminGeneralKeyboard,
-          resize_keyboard: true,
-        },
-      });
-    });
-
-    this.bot.onText(/Про нас/, async (msg: any) => {
-      const chatId = msg.chat.id;
-      await this.bot.sendMessage(chatId, information, {
-        reply_markup: {
-          keyboard: userGeneralKeyboard,
-          resize_keyboard: true,
-        },
-      });
-    });
-
-    this.bot.onText(/Замовлення/, async (msg: any) => {
-      const chatId = msg.chat.id;
-      const orders = await this.findAllOrders();
-      await this.bot.sendMessage(chatId, 'Перелік замовлень:', {
-        reply_markup: {
-          keyboard: adminGeneralKeyboard,
-          resize_keyboard: true,
-        },
-      });
-      orders.map(async (order: any) => {
-        const status = order.status === true ? `Активний` : 'Виконано';
-
-        const message = `${order.tg_owner} #${order.name}\n\nНайменування - ${
-          order.product[0].name
-        } - ${order.product[0].price}грн.\nКількість: ${
-          order.product[0].volume
-        }шт.\nСумма - ${order.total_price}грн.\n Телефон: ${
-          order.phone
-        }\nАдресса: ${order.adress}\nДата: ${order.createdAt.toLocaleDateString(
-          'ru-RU',
-          {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-          },
-        )}\nСтатус: ${status}`;
-        if (order.status === true) {
-          const keyboard = await orderButtons(order);
-          await this.bot.sendMessage(chatId, message, {
-            reply_markup: {
-              inline_keyboard: keyboard,
-              resize_keyboard: true,
-            },
-          });
-        } else {
-          const keyboard = await deleteButton(order);
-          await this.bot.sendMessage(chatId, message, {
-            reply_markup: {
-              inline_keyboard: keyboard,
-              resize_keyboard: true,
-            },
-          });
-        }
       });
     });
 
@@ -174,6 +100,84 @@ export class AppService {
           },
         },
       );
+    });
+
+    this.bot.onText(/Про нас/, async (msg: any) => {
+      const chatId = msg.chat.id;
+      await this.bot.sendMessage(chatId, information, {
+        reply_markup: {
+          keyboard: userGeneralKeyboard,
+          resize_keyboard: true,
+        },
+      });
+    });
+
+    this.bot.onText(/Склад/, async (msg: any) => {
+      const chatId = msg.chat.id;
+      const existUser = await this.userModel.findOne({ tg_chat: chatId });
+      if (existUser.role === 'admin') {
+        const products = await this.findAllProducts();
+        let message = 'Склад:\n\n';
+        products.forEach((product: any) => {
+          message += `${product.name}, кількість - ${product.quantity}шт. Ціна - ${product.price}грн.\n\n`;
+        });
+        await this.bot.sendMessage(chatId, message, {
+          reply_markup: {
+            keyboard: adminGeneralKeyboard,
+            resize_keyboard: true,
+          },
+        });
+      }
+    });
+
+    this.bot.onText(/Замовлення/, async (msg: any) => {
+      const chatId = msg.chat.id;
+      const existUser = await this.userModel.findOne({ tg_chat: chatId });
+      if (existUser.role === 'admin') {
+        const orders = await this.findAllOrders();
+        await this.bot.sendMessage(chatId, 'Перелік замовлень:', {
+          reply_markup: {
+            keyboard: adminGeneralKeyboard,
+            resize_keyboard: true,
+          },
+        });
+        orders.map(async (order: any) => {
+          const status = order.status === true ? `Активний` : 'Виконано';
+
+          const message = `${order.tg_owner} #${order.name}\n\nНайменування - ${
+            order.product[0].name
+          } - ${order.product[0].price}грн.\nКількість: ${
+            order.product[0].volume
+          }шт.\nСумма - ${order.total_price}грн.\n Телефон: ${
+            order.phone
+          }\nАдресса: ${
+            order.adress
+          }\nДата: ${order.createdAt.toLocaleDateString('ru-RU', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+          })}\nСтатус: ${status}`;
+          if (order.status === true) {
+            const keyboard = await orderButtons(order);
+            await this.bot.sendMessage(chatId, message, {
+              reply_markup: {
+                inline_keyboard: keyboard,
+                resize_keyboard: true,
+              },
+            });
+          } else {
+            const keyboard = await deleteButton(order);
+            await this.bot.sendMessage(chatId, message, {
+              reply_markup: {
+                inline_keyboard: keyboard,
+                resize_keyboard: true,
+              },
+            });
+          }
+        });
+      }
     });
 
     this.bot.on('message', async (msg: any) => {
@@ -342,6 +346,43 @@ export class AppService {
       }
     } catch (e) {
       throw e;
+    }
+  }
+
+  async editProduct(product: CreateProductDto) {
+    try {
+      const { name, quantity, price } = product;
+      if (name && quantity && price) {
+        const productName = await this.productModel.findOne({ name: name });
+        const updateProduct = await this.productModel.findByIdAndUpdate(
+          productName.id,
+          {
+            name: name,
+            quantity: quantity,
+            price: price,
+          },
+        );
+
+        const admins = await this.userModel.find({ role: 'admin' });
+        admins.map(
+          async (admin: any) =>
+            await this.bot.sendMessage(
+              admin.tg_chat,
+              `Оновлено товар: ${name}, ціна: ${price}грн., кількість:${quantity}`,
+              {
+                reply_markup: {
+                  keyboard: adminGeneralKeyboard,
+                  resize_keyboard: true,
+                },
+              },
+            ),
+        );
+        return updateProduct;
+      } else {
+        return;
+      }
+    } catch (e) {
+      throw e.message;
     }
   }
 
