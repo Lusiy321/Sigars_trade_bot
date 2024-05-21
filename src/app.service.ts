@@ -67,11 +67,15 @@ export class AppService {
       const filterProducts = products.filter(
         (product: any) => product.quantity !== 0,
       );
-      let message = '☄️Наші товари:☄️\n\n';
-      filterProducts.forEach((product: Products) => {
-        message += `✅ ${product.name} - ${product.price}грн.\n\n`;
+      const startMessage =
+        '☄️Замовлення від 1 блоку☄️\n\nДля замовлення натисніть "Замовити"';
+      filterProducts.map(async (product: Products) => {
+        const message = `✅ ${product.name} - ${product.price}грн.\n\n`;
+        await this.bot.sendPhoto(chatId, product.url, {
+          caption: message,
+        });
       });
-      await this.bot.sendMessage(chatId, message, {
+      await this.bot.sendMessage(chatId, startMessage, {
         reply_markup: {
           keyboard: userGeneralKeyboard,
           resize_keyboard: true,

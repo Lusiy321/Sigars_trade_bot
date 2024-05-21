@@ -87,6 +87,11 @@ export class Products extends Model<Products> {
     type: String,
   })
   name: string;
+  @Prop({
+    type: String,
+    default: ' ',
+  })
+  url: string;
 
   @Prop({
     type: Number,
