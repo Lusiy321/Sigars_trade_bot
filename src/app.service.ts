@@ -39,8 +39,7 @@ export class AppService {
       const existUser = await this.userModel.findOne({ tg_chat: chatId });
       if (existUser === null) {
         await this.create(user);
-      }
-      if (existUser.role === 'admin') {
+      } else if (existUser.role === 'admin') {
         await this.bot.sendMessage(chatId, `Привіт! Admin`, {
           reply_markup: {
             keyboard: adminGeneralKeyboard,
@@ -68,18 +67,18 @@ export class AppService {
         (product: any) => product.quantity !== 0,
       );
       const startMessage =
-        '☄️Замовлення від 1 блоку☄️\n\nДля замовлення натисніть "Замовити"';
-      filterProducts.map(async (product: Products) => {
-        const message = `✅ ${product.name} - ${product.price}грн.\n\n`;
-        await this.bot.sendPhoto(chatId, product.url, {
-          caption: message,
-        });
-      });
+        '☄️Замовлення від 1 блоку☄️\n\n!!!!БЕЗКОШТОВНА ДОСТАВКА НА АДРЕСУ!!!!\n\nДля замовлення натисніть "Замовити"';
       await this.bot.sendMessage(chatId, startMessage, {
         reply_markup: {
           keyboard: userGeneralKeyboard,
           resize_keyboard: true,
         },
+      });
+      filterProducts.map(async (product: Products) => {
+        const message = `✅ ${product.name} - ${product.price}грн.\n\n`;
+        await this.bot.sendPhoto(chatId, product.url, {
+          caption: message,
+        });
       });
     });
 
