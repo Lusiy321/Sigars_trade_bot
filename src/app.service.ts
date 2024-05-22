@@ -392,19 +392,42 @@ export class AppService {
   async createOrder(order: CreateOrderDto) {
     try {
       const { name, tg_owner, phone, adress, product } = order;
-      if (name && tg_owner && phone && adress && product) {
-        const total = product[0].volume * product[0].price;
+      if (
+        name &&
+        tg_owner &&
+        phone &&
+        adress &&
+        product &&
+        product.length > 0
+      ) {
+        // Вычисляем общую сумму всех товаров
+        const total = product.reduce(
+          (sum, item) => sum + item.volume * item.price,
+          0,
+        );
+
+        // Формируем перечень всех товаров
+        const productList = product
+          .map(
+            (item) =>
+              `Товар: ${item.name}\n Кількість: ${item.volume} шт. по ${item.price}грн.`,
+          )
+          .join('\n\n');
+
+        // Создаем заказ в базе данных
         const createdProduct = await this.orderModel.create({
           ...order,
           total_price: total,
         });
         createdProduct.save();
+
+        // Отправляем сообщение администраторам
         const admins = await this.userModel.find({ role: 'admin' });
         admins.map(
           async (admin: any) =>
             await this.bot.sendMessage(
               admin.tg_chat,
-              `${tg_owner} #${name}\n\nЗамовлення:\n\n Товар: ${product[0].name}\n Кількість: ${product[0].volume} шт. по ${product[0].price}грн.\n Сумма: ${total}грн.\n Телефон: ${phone}\n Адреса: ${adress}`,
+              `${tg_owner} #${name}\n\nЗамовлення:\n\n${productList}\n Сумма: ${total}грн.\n Телефон: ${phone}\n Адреса: ${adress}`,
               {
                 reply_markup: {
                   keyboard: adminGeneralKeyboard,
@@ -413,9 +436,11 @@ export class AppService {
               },
             ),
         );
+
+        // Отправляем сообщение пользователю
         await this.bot.sendMessage(
           tg_owner,
-          `Замовлення:\n\nТовар: ${product[0].name}\nКількість: ${product[0].volume} шт. по ${product[0].price}грн.\nСумма: ${total}грн.\nТелефон: ${phone}\nАдреса: ${adress}\n\nЧекайте, зараз Вам напише оператор для уточнення часу доставки`,
+          `Замовлення:\n\n${productList}\nСумма: ${total}грн.\nТелефон: ${phone}\nАдреса: ${adress}\n\nЧекайте, зараз Вам напише оператор для уточнення часу доставки`,
           {
             reply_markup: {
               keyboard: userGeneralKeyboard,
@@ -423,6 +448,7 @@ export class AppService {
             },
           },
         );
+
         return createdProduct;
       } else {
         return null;
