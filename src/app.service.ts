@@ -146,16 +146,19 @@ export class AppService {
         });
         orders.map(async (order: any) => {
           const status = order.status === true ? `Активний` : 'Виконано';
-
-          const message = `${order.tg_owner} #${order.name}\n\nНайменування - ${
-            order.product[0].name
-          } - ${order.product[0].price}грн.\nКількість: ${
-            order.product[0].volume
-          }шт.\nСумма - ${order.total_price}грн.\n Телефон: ${
-            order.phone
-          }\nАдресса: ${
+          const productList = order.product
+            .map(
+              (item: any) =>
+                `Товар: ${item.name}\n Кількість: ${item.volume} шт. по ${item.price}грн.`,
+            )
+            .join('\n\n');
+          const message = `${order.tg_owner} #${
+            order.name
+          }\n\n${productList}\n\nСумма замовлення - ${
+            order.total_price
+          }грн.\nТелефон: ${order.phone}\nАдресса: ${
             order.adress
-          }\nДата: ${order.createdAt.toLocaleDateString('ru-RU', {
+          }\nДата: ${order.createdAt.toLocaleDateString('ua-UA', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
@@ -405,7 +408,6 @@ export class AppService {
           (sum, item) => sum + item.volume * item.price,
           0,
         );
-
         // Формируем перечень всех товаров
         const productList = product
           .map(
@@ -427,7 +429,7 @@ export class AppService {
           async (admin: any) =>
             await this.bot.sendMessage(
               admin.tg_chat,
-              `${tg_owner} #${name}\n\nЗамовлення:\n\n${productList}\n Сумма: ${total}грн.\n Телефон: ${phone}\n Адреса: ${adress}`,
+              `${tg_owner} #${name}\n\nЗамовлення:\n\n${productList}\nСумма: ${total}грн.\nТелефон: ${phone}\nАдреса: ${adress}`,
               {
                 reply_markup: {
                   keyboard: adminGeneralKeyboard,
