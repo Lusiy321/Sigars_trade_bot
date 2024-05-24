@@ -158,7 +158,7 @@ export class AppService {
             order.total_price
           }грн.\nТелефон: ${order.phone}\nАдресса: ${
             order.adress
-          }\nДата: ${order.createdAt.toLocaleDateString('ua-UA', {
+          }\nДата: ${order.createdAt.toLocaleDateString('ru-RU', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
