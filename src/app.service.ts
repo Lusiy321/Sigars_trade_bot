@@ -61,25 +61,68 @@ export class AppService {
     });
 
     this.bot.onText(/Товари/, async (msg: any) => {
-      const chatId = msg.chat.id;
-      const products = await this.findAllProducts();
-      const filterProducts = products.filter(
-        (product: any) => product.quantity !== 0,
-      );
-      const startMessage =
-        '☄️Замовлення від 1 блоку☄️\n\n!!!!БЕЗКОШТОВНА ДОСТАВКА НА АДРЕСУ!!!!\n\nДля замовлення натисніть "Замовити"';
-      await this.bot.sendMessage(chatId, startMessage, {
-        reply_markup: {
-          keyboard: userGeneralKeyboard,
-          resize_keyboard: true,
-        },
-      });
-      filterProducts.map(async (product: Products) => {
-        const message = `✅ ${product.name} - ${product.price}грн.\n\n`;
-        await this.bot.sendPhoto(chatId, product.url, {
-          caption: message,
+      try {
+        const chatId = msg.chat.id;
+        const products = await this.findAllProducts();
+
+        // Фильтруем продукты с количеством больше нуля
+        const filterProducts = products.filter(
+          (product: any) => product.quantity !== 0,
+        );
+        let sigarsMessage = `💥💥💥💥💥 Товари 💥💥💥💥💥\n\n`;
+        filterProducts.forEach((product: any) => {
+          sigarsMessage += `✅ ${product.name} Ціна - ${product.price}грн.\n`;
         });
-      });
+        //   sigarsMessage += `✅ ${product.name} Ціна - ${product.price}грн.\n`;
+        // });
+        // // Создаем сообщение для сигар
+        // let sigarsMessage = `\nТютюнові вироби:\n\n`;
+        // const sigars = products.filter(
+        //   (product: Products) => product.type === 'sigars',
+        // );
+
+        // sigars.forEach((product: any) => {
+        //   sigarsMessage += `✅ ${product.name} Ціна - ${product.price}грн.\n`;
+        // });
+
+        // // Создаем сообщение для алкоголя
+        // let alcoMessage = `\nАлкоголь вироби:\n\n`;
+        // const alco = products.filter((product: any) => product.type === 'alco');
+        // alco.forEach((product: any) => {
+        //   alcoMessage += `✅${product.name} Ціна - ${product.price}грн.\n`;
+        // });
+
+        // // Создаем сообщение для ELFBARS
+        // let elfMessage = `\nELFBARS:\n\n`;
+        // const elf = filterProducts.filter(
+        //   (product: any) => product.type === 'elf',
+        // );
+        // elf.forEach((product: any) => {
+        //   elfMessage += `✅${product.name} Ціна - ${product.price}грн.\n`;
+        // });
+
+        // Формируем финальное сообщение
+        const startMessage =
+          `☄️☄️☄️☄️ Замовлення від 1 блоку ☄️☄️☄️☄️\n\n💥💥💥 БЕЗКОШТОВНА ДОСТАВКА НА АДРЕСУ 💥💥💥\n\nДля замовлення натисніть кнопку "Замовити"\n\n` +
+          sigarsMessage;
+        await this.bot.sendMessage(chatId, startMessage, {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: 'Замовити',
+                  web_app: {
+                    url: 'https://sigars-react-form.vercel.app/order',
+                  },
+                },
+              ],
+            ],
+            resize_keyboard: true,
+          },
+        });
+      } catch (err) {
+        console.log(err);
+      }
     });
 
     this.bot.onText(/Замовити/, async (msg: any) => {
