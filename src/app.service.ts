@@ -373,8 +373,8 @@ export class AppService {
 
   async createProduct(product: CreateProductDto) {
     try {
-      const { name, quantity, price } = product;
-      if (name && quantity && price) {
+      const { name, quantity, price, category } = product;
+      if (name && quantity && price && category) {
         const createdProduct = await this.productModel.create({
           ...product,
         });
