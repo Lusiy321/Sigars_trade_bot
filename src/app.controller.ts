@@ -30,4 +30,8 @@ export class AppController {
   async createOrder(@Body() order: CreateOrderDto): Promise<Orders> {
     return await this.appService.createOrder(order);
   }
+  @Get('/update')
+  async getUpdates(): Promise<void> {
+    return await this.appService.updateDatBase();
+  }
 }

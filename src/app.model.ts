@@ -77,12 +77,6 @@ export class Orders extends Model<Orders> {
     default: true,
   })
   status: boolean;
-
-  @Prop({
-    type: String,
-    default: 'sigars',
-  })
-  type: string;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Orders);
@@ -108,6 +102,11 @@ export class Products extends Model<Products> {
     type: Number,
   })
   quantity: number;
+  @Prop({
+    type: String,
+    default: 'sigars',
+  })
+  category: string;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Products);

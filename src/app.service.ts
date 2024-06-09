@@ -69,42 +69,46 @@ export class AppService {
         const filterProducts = products.filter(
           (product: any) => product.quantity !== 0,
         );
-        let sigarsMessage = `💥💥💥💥💥 Товари 💥💥💥💥💥\n\n`;
-        filterProducts.forEach((product: any) => {
-          sigarsMessage += `✅ ${product.name} Ціна - ${product.price}грн.\n`;
+
+        // Создаем сообщение для сигар
+        let sigarsMessage = `\n 🚬🚬 Тютюнові вироби: 🚬🚬 \n\n`;
+        const sigars = products.filter(
+          (product: Products) => product.category === 'sigars',
+        );
+
+        sigars.forEach((product: any) => {
+          sigarsMessage += `✅ ${product.name} Ціна - ${product.price}грн.\n\n`;
         });
-        //   sigarsMessage += `✅ ${product.name} Ціна - ${product.price}грн.\n`;
-        // });
-        // // Создаем сообщение для сигар
-        // let sigarsMessage = `\nТютюнові вироби:\n\n`;
-        // const sigars = products.filter(
-        //   (product: Products) => product.type === 'sigars',
-        // );
 
-        // sigars.forEach((product: any) => {
-        //   sigarsMessage += `✅ ${product.name} Ціна - ${product.price}грн.\n`;
-        // });
+        // Создаем сообщение для алкоголя
+        let alcoMessage = `\n 💦💦 Алкоголь вироби: 💦💦\n\n`;
+        const alco = products.filter(
+          (product: any) => product.category === 'alco',
+        );
+        alco.forEach((product: any) => {
+          alcoMessage += `✅${product.name} Ціна - ${product.price}грн.\n\n`;
+        });
 
-        // // Создаем сообщение для алкоголя
-        // let alcoMessage = `\nАлкоголь вироби:\n\n`;
-        // const alco = products.filter((product: any) => product.type === 'alco');
-        // alco.forEach((product: any) => {
-        //   alcoMessage += `✅${product.name} Ціна - ${product.price}грн.\n`;
-        // });
-
-        // // Создаем сообщение для ELFBARS
-        // let elfMessage = `\nELFBARS:\n\n`;
-        // const elf = filterProducts.filter(
-        //   (product: any) => product.type === 'elf',
-        // );
-        // elf.forEach((product: any) => {
-        //   elfMessage += `✅${product.name} Ціна - ${product.price}грн.\n`;
-        // });
+        // Создаем сообщение для ELFBARS
+        let elfMessage = `\n⚡️⚡️⚡️ ELFBARS:⚡️⚡️⚡️\n\n`;
+        const elf = filterProducts.filter(
+          (product: any) => product.category === 'elf',
+        );
+        elf.forEach((product: any) => {
+          elfMessage += `✅${product.name} Ціна - ${product.price}грн.\n\n`;
+        });
 
         // Формируем финальное сообщение
+        const message = `💥💥💥💥💥 Товари 💥💥💥💥💥\n\n`;
+        const infoMsg = `\n\n❗️🏦Ціни вказані за 1 блок🏦❗️\n\n📲Для замовлення натисніть📲
+⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️`;
         const startMessage =
-          `☄️☄️☄️☄️ Замовлення від 1 блоку ☄️☄️☄️☄️\n\n💥💥💥 БЕЗКОШТОВНА ДОСТАВКА НА АДРЕСУ 💥💥💥\n\nДля замовлення натисніть кнопку "Замовити"\n\n` +
-          sigarsMessage;
+          `📦 ЗАМОВЛЕННЯ ВІД 1 БЛОКУ 📦\n\n💥 БЕЗКОШТОВНА ДОСТАВКА 💥\n💥💥💥💥НА АДРЕСУ💥💥💥💥💥\n\n❗️❗️❗️Тільки м.Кривий Ріг❗️❗️❗️\n(Покровський та Саксаганський)\n\n🚀🚀 Можлива відправка 🚀🚀\n🚀🚀🚀Новою Поштою🚀🚀🚀\n\n` +
+          message +
+          sigarsMessage +
+          elfMessage +
+          alcoMessage +
+          infoMsg;
         await this.bot.sendMessage(chatId, startMessage, {
           reply_markup: {
             inline_keyboard: [
@@ -497,6 +501,19 @@ export class AppService {
         return createdProduct;
       } else {
         return null;
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async updateDatBase() {
+    try {
+      const products = await this.productModel.find();
+      for (const product of products) {
+        await this.productModel.findByIdAndUpdate(product.id, {
+          category: 'sigars',
+        });
       }
     } catch (e) {
       throw e;
