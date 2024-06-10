@@ -12,6 +12,8 @@ import {
   Users,
 } from './app.model';
 import { AppController } from './app.controller';
+import { MulterModule } from '@nestjs/platform-express';
+import { CloudinaryService } from './cloudinary.service';
 
 @Module({
   imports: [
@@ -24,8 +26,11 @@ import { AppController } from './app.controller';
       { name: Orders.name, schema: OrderSchema, collection: 'orders' },
       { name: Products.name, schema: ProductSchema, collection: 'products' },
     ]),
+    MulterModule.register({
+      dest: './uploads',
+    }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, CloudinaryService],
 })
 export class AppModule {}
